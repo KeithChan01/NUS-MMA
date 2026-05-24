@@ -42,15 +42,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### 4. Deploy to Vercel
+### 4. Deploy to Netlify
 
 1. Push this repo to GitHub.
-2. Go to [vercel.com](https://vercel.com) → New Project → Import your repo.
-3. Add the four environment variables above in the Vercel project settings.
-4. Deploy. Vercel auto-deploys on every push to `main`.
-5. **Add the Vercel URL as an allowed redirect** in Supabase:
-   - Authentication → URL Configuration → Site URL: `https://your-app.vercel.app`
-   - Add Redirect URLs: `https://your-app.vercel.app/auth/callback`
+2. Go to [netlify.com](https://netlify.com) → **Add new site → Import an existing project → GitHub** → pick this repo.
+3. Build settings are auto-detected from `netlify.toml` (no changes needed).
+4. Under **Site configuration → Environment variables**, add the four env vars:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSWORD`
+5. Click **Deploy site**. Netlify auto-deploys on every push to `main`.
+6. **Add the Netlify URL as an allowed redirect** in Supabase:
+   - Authentication → URL Configuration → Site URL: `https://your-app.netlify.app`
+   - Add Redirect URLs: `https://your-app.netlify.app/auth/callback`
 
 ---
 
@@ -61,4 +66,4 @@ Open [http://localhost:3000](http://localhost:3000).
 | Members | `/` | Sign in with Google, tap a session to join/cancel |
 | Coach | `/admin` | Enter admin password, create/delete sessions, view rosters |
 
-Share the Vercel URL in the WhatsApp group. Members sign in once and the app remembers them.
+Share the Netlify URL in the WhatsApp group. Members sign in once and the app remembers them.
