@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Session } from "@/lib/types";
+import type { Session, Signup, Profile } from "@/lib/types";
+import { MARTIAL_ARTS } from "@/lib/types";
 
 function formatDateTime(iso: string) {
   const d = new Date(iso);
@@ -110,6 +111,45 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
         {loading ? "Creating…" : "Create session"}
       </button>
     </form>
+  );
+}
+
+function AdminMemberRow({ signup, index }: { signup: Signup; index: number }) {
+  const [open, setOpen] = useState(false);
+  const profile = signup.profile as Profile | null | undefined;
+  const hasDetails = profile && (profile.weight_class || MARTIAL_ARTS.some(({ key }) => profile[key]));
+
+  return (
+    <li>
+      <button
+        className={`w-full flex items-center gap-2 text-sm text-left rounded-lg px-1 py-0.5 transition-colors ${hasDetails ? "hover:bg-gray-800" : "cursor-default"}`}
+        onClick={() => hasDetails && setOpen(!open)}
+        disabled={!hasDetails}
+      >
+        <span className="text-gray-600 text-xs w-4 text-right flex-shrink-0">{index}.</span>
+        <span className="text-gray-300">{signup.display_name}</span>
+        {hasDetails && (
+          <svg
+            className={`w-3 h-3 text-gray-500 ml-auto flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+      </button>
+      {open && profile && (
+        <div className="ml-8 mt-1 mb-2 text-xs text-gray-400 space-y-0.5">
+          {profile.weight_class && (
+            <p><span className="text-gray-500">Weight:</span> {profile.weight_class}</p>
+          )}
+          {MARTIAL_ARTS.map(({ key, label }) =>
+            profile[key] ? (
+              <p key={key}><span className="text-gray-500">{label}:</span> {profile[key]}</p>
+            ) : null
+          )}
+        </div>
+      )}
+    </li>
   );
 }
 
@@ -246,12 +286,9 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
               {signups.length === 0 ? (
                 <p className="text-sm text-gray-500">No sign-ups yet.</p>
               ) : (
-                <ul className="space-y-1">
+                <ul className="space-y-0.5">
                   {signups.map((s, i) => (
-                    <li key={s.id} className="text-sm text-gray-300 flex items-center gap-2">
-                      <span className="text-gray-600 text-xs w-4 text-right">{i + 1}.</span>
-                      {s.display_name}
-                    </li>
+                    <AdminMemberRow key={s.id} signup={s} index={i + 1} />
                   ))}
                 </ul>
               )}

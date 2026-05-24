@@ -16,7 +16,7 @@ export default async function AdminPage() {
   const supabase = await createServiceClient();
   const { data: sessions } = await supabase
     .from("sessions")
-    .select("*, signups(id, user_id, display_name, created_at)")
+    .select("*, signups(id, user_id, display_name, created_at, profile:profiles(*))")
     .order("date_time", { ascending: true });
 
   return <AdminDashboard sessions={sessions ?? []} />;

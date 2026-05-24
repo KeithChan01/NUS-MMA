@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import SessionList from "@/components/SessionList";
 import SignInButton from "@/components/SignInButton";
 import UserMenu from "@/components/UserMenu";
@@ -13,14 +12,19 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
 
   const serviceClient = await createServiceClient();
-  const { data: sessions } = await serviceClient
-    .from("sessions")
-    .select("*, signups(id, user_id, display_name, created_at)")
-    .gte(
-      "date_time",
-      new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString()
-    )
-    .order("date_time", { ascending: true });
+
+  const [{ data: sessions }, { data: profile }] = await Promise.all([
+    serviceClient
+      .from("sessions")
+      .select("*, signups(id, user_id, display_name, created_at, profile:profiles(*))")
+      .gte("date_time", new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString())
+      .order("date_time", { ascending: true }),
+    user
+      ? serviceClient.from("profiles").select("*").eq("id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const needsProfile = !!user && !profile;
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -34,7 +38,7 @@ export default async function HomePage() {
               <p className="text-gray-400 text-xs">Training Sessions</p>
             </div>
           </div>
-          {user ? <UserMenu user={user} /> : <SignInButton />}
+          {user ? <UserMenu user={user} profile={profile} /> : <SignInButton />}
         </div>
       </header>
 
@@ -49,6 +53,7 @@ export default async function HomePage() {
         <SessionList
           sessions={sessions ?? []}
           currentUserId={user?.id ?? null}
+          needsProfile={needsProfile}
         />
       </main>
     </div>

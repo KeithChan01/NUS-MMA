@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Session } from "@/lib/types";
+import type { Session, Signup } from "@/lib/types";
+import ProfileSetup from "@/components/ProfileSetup";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -20,6 +21,19 @@ function formatTime(iso: string) {
     minute: "2-digit",
     hour12: true,
   });
+}
+
+function MemberRow({ signup, isMe }: { signup: Signup; isMe: boolean }) {
+  return (
+    <li className="flex items-center gap-2 text-sm">
+      <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+        {signup.display_name[0]?.toUpperCase()}
+      </div>
+      <span className={isMe ? "text-white font-medium" : "text-gray-300"}>
+        {signup.display_name}{isMe && " (you)"}
+      </span>
+    </li>
+  );
 }
 
 function SessionCard({
@@ -56,9 +70,7 @@ function SessionCard({
     if (!mySignup) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/signups/${mySignup.id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/signups/${mySignup.id}`, { method: "DELETE" });
       if (res.ok) router.refresh();
     } finally {
       setLoading(false);
@@ -67,12 +79,10 @@ function SessionCard({
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-      {/* Card header — always visible */}
       <button
         className="w-full text-left px-4 py-4 flex items-start gap-3"
         onClick={() => setExpanded(!expanded)}
       >
-        {/* Date block */}
         <div className="flex-shrink-0 w-12 text-center">
           <p className="text-xs text-gray-500 uppercase">
             {formatDate(session.date_time).split(" ")[0]}
@@ -85,7 +95,6 @@ function SessionCard({
           </p>
         </div>
 
-        {/* Details */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-white">{session.title}</h2>
@@ -98,37 +107,21 @@ function SessionCard({
           <p className="text-sm text-gray-400 mt-0.5">
             {formatTime(session.date_time)} · {session.location}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {signups.length} signed up
-          </p>
+          <p className="text-xs text-gray-500 mt-1">{signups.length} signed up</p>
         </div>
 
-        {/* Chevron */}
         <svg
-          className={`w-4 h-4 text-gray-500 mt-1 flex-shrink-0 transition-transform ${
-            expanded ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+          className={`w-4 h-4 text-gray-500 mt-1 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      {/* Expanded panel */}
       {expanded && (
         <div className="border-t border-gray-800 px-4 py-4 space-y-4">
-          {session.notes && (
-            <p className="text-sm text-gray-400">{session.notes}</p>
-          )}
+          {session.notes && <p className="text-sm text-gray-400">{session.notes}</p>}
 
-          {/* Signup / cancel button */}
           {currentUserId ? (
             isSignedUp ? (
               <button
@@ -148,12 +141,9 @@ function SessionCard({
               </button>
             )
           ) : (
-            <p className="text-sm text-gray-500 text-center">
-              Sign in to join this session
-            </p>
+            <p className="text-sm text-gray-500 text-center">Sign in to join this session</p>
           )}
 
-          {/* Roster */}
           {signups.length > 0 && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
@@ -161,18 +151,7 @@ function SessionCard({
               </p>
               <ul className="space-y-1">
                 {signups.map((s) => (
-                  <li
-                    key={s.id}
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                      {s.display_name[0]?.toUpperCase()}
-                    </div>
-                    <span className={s.user_id === currentUserId ? "text-white font-medium" : ""}>
-                      {s.display_name}
-                      {s.user_id === currentUserId && " (you)"}
-                    </span>
-                  </li>
+                  <MemberRow key={s.id} signup={s} isMe={s.user_id === currentUserId} />
                 ))}
               </ul>
             </div>
@@ -186,32 +165,36 @@ function SessionCard({
 export default function SessionList({
   sessions,
   currentUserId,
+  needsProfile,
 }: {
   sessions: Session[];
   currentUserId: string | null;
+  needsProfile: boolean;
 }) {
-  if (sessions.length === 0) {
-    return (
-      <div className="text-center py-16 text-gray-500">
-        <p className="text-4xl mb-3">🥋</p>
-        <p className="font-medium text-gray-400">No upcoming sessions yet</p>
-        <p className="text-sm mt-1">Check back soon.</p>
-      </div>
-    );
-  }
+  const [showProfileSetup, setShowProfileSetup] = useState(needsProfile);
 
   return (
-    <div className="space-y-3">
-      <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-        Upcoming sessions
-      </p>
-      {sessions.map((session) => (
-        <SessionCard
-          key={session.id}
-          session={session}
-          currentUserId={currentUserId}
-        />
-      ))}
-    </div>
+    <>
+      {showProfileSetup && (
+        <ProfileSetup onClose={() => setShowProfileSetup(false)} />
+      )}
+
+      {sessions.length === 0 ? (
+        <div className="text-center py-16 text-gray-500">
+          <p className="text-4xl mb-3">🥋</p>
+          <p className="font-medium text-gray-400">No upcoming sessions yet</p>
+          <p className="text-sm mt-1">Check back soon.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+            Upcoming sessions
+          </p>
+          {sessions.map((session) => (
+            <SessionCard key={session.id} session={session} currentUserId={currentUserId} />
+          ))}
+        </div>
+      )}
+    </>
   );
 }
