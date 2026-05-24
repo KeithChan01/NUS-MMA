@@ -60,47 +60,63 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
   };
 
   const field =
-    "w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand text-sm";
+    "w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand text-sm [color-scheme:dark]";
+  const label = "block text-xs text-gray-400 mb-1";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <input
-        className={field}
-        placeholder="Session title (e.g. Sparring Night)"
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
-        required
-      />
-      <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className={label}>Session title</label>
         <input
-          type="date"
           className={field}
-          value={form.date}
-          onChange={(e) => setForm({ ...form, date: e.target.value })}
-          required
-        />
-        <input
-          type="time"
-          className={field}
-          value={form.time}
-          onChange={(e) => setForm({ ...form, time: e.target.value })}
+          placeholder="e.g. Sparring Night"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
           required
         />
       </div>
-      <input
-        className={field}
-        placeholder="Location (e.g. MPSH 3)"
-        value={form.location}
-        onChange={(e) => setForm({ ...form, location: e.target.value })}
-        required
-      />
-      <textarea
-        className={`${field} resize-none`}
-        rows={2}
-        placeholder="Notes (optional)"
-        value={form.notes}
-        onChange={(e) => setForm({ ...form, notes: e.target.value })}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={label}>Date</label>
+          <input
+            type="date"
+            className={field}
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <label className={label}>Time</label>
+          <input
+            type="time"
+            className={field}
+            value={form.time}
+            onChange={(e) => setForm({ ...form, time: e.target.value })}
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label className={label}>Location</label>
+        <input
+          className={field}
+          placeholder="e.g. MPSH 3"
+          value={form.location}
+          onChange={(e) => setForm({ ...form, location: e.target.value })}
+          required
+        />
+      </div>
+      <div>
+        <label className={label}>Notes (optional)</label>
+        <textarea
+          className={`${field} resize-none`}
+          rows={2}
+          placeholder="e.g. Bring sparring gear"
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        />
+      </div>
       {error && <p className="text-sm text-red-400">{error}</p>}
       <button
         type="submit"
@@ -203,7 +219,7 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
     }
   };
 
-  const field = "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand text-sm";
+  const field = "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand text-sm [color-scheme:dark]";
 
   return (
     <div className={`bg-gray-900 border rounded-xl overflow-hidden ${past ? "border-gray-800 opacity-60" : "border-gray-700"}`}>
