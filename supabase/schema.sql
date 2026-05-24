@@ -24,6 +24,14 @@ create table if not exists signups (
 alter table sessions enable row level security;
 alter table signups enable row level security;
 
+-- Grant table-level permissions to Postgres roles
+grant select on sessions to anon, authenticated;
+grant all on sessions to service_role;
+
+grant select on signups to anon, authenticated;
+grant insert, delete on signups to authenticated;
+grant all on signups to service_role;
+
 -- Sessions: anyone can read
 create policy "sessions_public_read" on sessions
   for select using (true);
