@@ -113,11 +113,23 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
   );
 }
 
-function SessionRow({ session, onDeleted }: { session: Session; onDeleted: () => void }) {
+function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDeleted: () => void; onUpdated: () => void }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState("");
   const past = isPast(session.date_time);
   const signups = session.signups ?? [];
+
+  const dt = new Date(session.date_time);
+  const [editForm, setEditForm] = useState({
+    title: session.title,
+    date: dt.toLocaleDateString("en-CA"),
+    time: dt.toTimeString().slice(0, 5),
+    location: session.location,
+    notes: session.notes ?? "",
+  });
 
   const handleDelete = async () => {
     if (!confirm(`Delete "${session.title}"? This will remove all sign-ups.`)) return;
@@ -127,12 +139,39 @@ function SessionRow({ session, onDeleted }: { session: Session; onDeleted: () =>
     else setDeleting(false);
   };
 
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setEditError("");
+    const date_time = new Date(`${editForm.date}T${editForm.time}`).toISOString();
+    const res = await fetch(`/api/sessions/${session.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: editForm.title,
+        date_time,
+        location: editForm.location,
+        notes: editForm.notes || undefined,
+      }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setEditing(false);
+      onUpdated();
+    } else {
+      const data = await res.json();
+      setEditError(data.error ?? "Something went wrong");
+    }
+  };
+
+  const field = "w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand text-sm";
+
   return (
     <div className={`bg-gray-900 border rounded-xl overflow-hidden ${past ? "border-gray-800 opacity-60" : "border-gray-700"}`}>
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           className="flex-1 text-left min-w-0"
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => { setExpanded(!expanded); setEditing(false); }}
         >
           <p className={`font-medium text-sm ${past ? "text-gray-400" : "text-white"}`}>
             {session.title}
@@ -144,6 +183,16 @@ function SessionRow({ session, onDeleted }: { session: Session; onDeleted: () =>
           <p className="text-xs text-gray-500 mt-0.5">
             {signups.length} signed up
           </p>
+        </button>
+        {/* Edit button */}
+        <button
+          onClick={() => { setEditing(!editing); setExpanded(true); }}
+          className="flex-shrink-0 p-2 text-gray-500 hover:text-blue-400 transition-colors"
+          title="Edit session"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
         </button>
         <button
           onClick={handleDelete}
@@ -172,18 +221,41 @@ function SessionRow({ session, onDeleted }: { session: Session; onDeleted: () =>
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-800 px-4 py-3">
-          {signups.length === 0 ? (
-            <p className="text-sm text-gray-500">No sign-ups yet.</p>
+        <div className="border-t border-gray-800 px-4 py-3 space-y-3">
+          {editing ? (
+            <form onSubmit={handleSave} className="space-y-2">
+              <input className={field} value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Title" required />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="date" className={field} value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} required />
+                <input type="time" className={field} value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} required />
+              </div>
+              <input className={field} value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Location" required />
+              <textarea className={`${field} resize-none`} rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Notes (optional)" />
+              {editError && <p className="text-xs text-red-400">{editError}</p>}
+              <div className="flex gap-2">
+                <button type="submit" disabled={saving} className="flex-1 py-2 bg-brand hover:bg-brand-dark text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+                <button type="button" onClick={() => setEditing(false)} className="px-4 py-2 border border-gray-600 text-gray-300 text-sm rounded-lg hover:bg-gray-800 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
           ) : (
-            <ul className="space-y-1">
-              {signups.map((s, i) => (
-                <li key={s.id} className="text-sm text-gray-300 flex items-center gap-2">
-                  <span className="text-gray-600 text-xs w-4 text-right">{i + 1}.</span>
-                  {s.display_name}
-                </li>
-              ))}
-            </ul>
+            <>
+              {signups.length === 0 ? (
+                <p className="text-sm text-gray-500">No sign-ups yet.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {signups.map((s, i) => (
+                    <li key={s.id} className="text-sm text-gray-300 flex items-center gap-2">
+                      <span className="text-gray-600 text-xs w-4 text-right">{i + 1}.</span>
+                      {s.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </div>
       )}
@@ -263,7 +335,7 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
           ) : (
             <div className="space-y-2">
               {upcoming.map((s) => (
-                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} />
+                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} onUpdated={() => router.refresh()} />
               ))}
             </div>
           )}
@@ -277,7 +349,7 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
             </p>
             <div className="space-y-2">
               {past.map((s) => (
-                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} />
+                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} onUpdated={() => router.refresh()} />
               ))}
             </div>
           </div>
