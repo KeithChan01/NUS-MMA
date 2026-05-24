@@ -75,27 +75,25 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
           required
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={label}>Date</label>
-          <input
-            type="date"
-            className={field}
-            value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
-            required
-          />
-        </div>
-        <div>
-          <label className={label}>Time</label>
-          <input
-            type="time"
-            className={field}
-            value={form.time}
-            onChange={(e) => setForm({ ...form, time: e.target.value })}
-            required
-          />
-        </div>
+      <div>
+        <label className={label}>Date</label>
+        <input
+          type="date"
+          className={field}
+          value={form.date}
+          onChange={(e) => setForm({ ...form, date: e.target.value })}
+          required
+        />
+      </div>
+      <div>
+        <label className={label}>Time</label>
+        <input
+          type="time"
+          className={field}
+          value={form.time}
+          onChange={(e) => setForm({ ...form, time: e.target.value })}
+          required
+        />
       </div>
       <div>
         <label className={label}>Location</label>
@@ -280,10 +278,8 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
           {editing ? (
             <form onSubmit={handleSave} className="space-y-2">
               <input className={field} value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Title" required />
-              <div className="grid grid-cols-2 gap-2">
-                <input type="date" className={field} value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} required />
-                <input type="time" className={field} value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} required />
-              </div>
+              <input type="date" className={field} value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} required />
+              <input type="time" className={field} value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} required />
               <input className={field} value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Location" required />
               <textarea className={`${field} resize-none`} rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Notes (optional)" />
               {editError && <p className="text-xs text-red-400">{editError}</p>}
