@@ -32,9 +32,9 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="text-4xl">🥊</span>
-          <h1 className="text-xl font-bold text-white mt-3">Coach Admin</h1>
-          <p className="text-sm text-gray-400 mt-1">NUS MMA</p>
+          <img src="/NUS_MMA_Logo_No BG.png" alt="NUS MMA" className="w-32 h-32 object-contain mx-auto" />
+          <h1 className="text-2xl font-bold text-white mt-2">Coach Admin</h1>
+          <p className="text-base text-gray-400 mt-1">NUS MMA</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

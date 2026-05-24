@@ -13,13 +13,19 @@ function formatDate(iso: string) {
   });
 }
 
-function formatTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("en-SG", {
+function formatTime(start: string, end?: string | null) {
+  const startStr = new Date(start).toLocaleTimeString("en-SG", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
+  if (!end) return startStr;
+  const endStr = new Date(end).toLocaleTimeString("en-SG", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${startStr} – ${endStr}`;
 }
 
 function MemberRow({ signup, isMe }: { signup: Signup; isMe: boolean }) {
@@ -103,7 +109,7 @@ function SessionCard({
             )}
           </div>
           <p className="text-sm text-gray-400 mt-0.5">
-            {formatTime(session.date_time)} · {session.location}
+            {formatTime(session.date_time, session.end_time)} · {session.location}
           </p>
           <p className="text-xs text-gray-500 mt-1">{signups.length} signed up</p>
         </div>
@@ -179,7 +185,7 @@ export default function SessionList({
 
       {sessions.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
-          <p className="text-4xl mb-3">🥋</p>
+          <img src="/NUS_MMA_Logo_No BG.png" alt="NUS MMA" className="w-28 h-28 object-contain mx-auto mb-3 opacity-40" />
           <p className="font-medium text-gray-400">No upcoming sessions yet</p>
           <p className="text-sm mt-1">Check back soon.</p>
         </div>

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   if (unauthorized) return unauthorized;
 
   const body = await request.json();
-  const { title, date_time, location, notes } = body;
+  const { title, date_time, end_time, location, notes } = body;
 
   if (!title || !date_time || !location) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
-    .insert({ title, date_time, location, notes: notes || null })
+    .insert({ title, date_time, end_time: end_time || null, location, notes: notes || null })
     .select()
     .single();
 

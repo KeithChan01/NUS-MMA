@@ -31,12 +31,12 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gray-950">
       {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🥊</span>
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/NUS_MMA_Logo_No BG.png" alt="NUS MMA" className="w-14 h-14 object-contain" />
             <div>
-              <h1 className="font-bold text-white text-sm leading-tight">NUS MMA</h1>
-              <p className="text-gray-400 text-xs">Training Sessions</p>
+              <h1 className="font-bold text-white text-lg leading-tight">NUS MMA</h1>
+              <p className="text-gray-400 text-sm">Training Sessions</p>
             </div>
           </div>
           {user ? <UserMenu user={user} profile={profile} /> : <SignInButton />}

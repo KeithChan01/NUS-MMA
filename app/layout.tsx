@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "NUS MMA – Training Sessions",
   description: "Sign up for NUS MMA training sessions",
+  icons: { icon: "/NUS_MMA_Logo_No BG.png" },
 };
 
 export default function RootLayout({

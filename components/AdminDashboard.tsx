@@ -4,9 +4,9 @@ import { useState } from "react";
 import type { Session, Signup, Profile } from "@/lib/types";
 import { MARTIAL_ARTS } from "@/lib/types";
 
-function formatDateTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleString("en-SG", {
+function formatDateTime(start: string, end?: string | null) {
+  const d = new Date(start);
+  const startStr = d.toLocaleString("en-SG", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -14,6 +14,13 @@ function formatDateTime(iso: string) {
     minute: "2-digit",
     hour12: true,
   });
+  if (!end) return startStr;
+  const endStr = new Date(end).toLocaleTimeString("en-SG", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${startStr} – ${endStr}`;
 }
 
 function isPast(iso: string) {
@@ -24,7 +31,8 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
   const [form, setForm] = useState({
     title: "",
     date: "",
-    time: "",
+    start_time: "",
+    end_time: "",
     location: "",
     notes: "",
   });
@@ -36,7 +44,10 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
     setLoading(true);
     setError("");
 
-    const date_time = new Date(`${form.date}T${form.time}`).toISOString();
+    const date_time = new Date(`${form.date}T${form.start_time}`).toISOString();
+    const end_time = form.end_time
+      ? new Date(`${form.date}T${form.end_time}`).toISOString()
+      : null;
 
     const res = await fetch("/api/sessions", {
       method: "POST",
@@ -44,6 +55,7 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
       body: JSON.stringify({
         title: form.title,
         date_time,
+        end_time,
         location: form.location,
         notes: form.notes || undefined,
       }),
@@ -51,7 +63,7 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
 
     setLoading(false);
     if (res.ok) {
-      setForm({ title: "", date: "", time: "", location: "", notes: "" });
+      setForm({ title: "", date: "", start_time: "", end_time: "", location: "", notes: "" });
       onCreated();
     } else {
       const data = await res.json();
@@ -85,15 +97,26 @@ function CreateSessionForm({ onCreated }: { onCreated: () => void }) {
           required
         />
       </div>
-      <div>
-        <label className={label}>Time</label>
-        <input
-          type="time"
-          className={field}
-          value={form.time}
-          onChange={(e) => setForm({ ...form, time: e.target.value })}
-          required
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={label}>Start time</label>
+          <input
+            type="time"
+            className={field}
+            value={form.start_time}
+            onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <label className={label}>End time (optional)</label>
+          <input
+            type="time"
+            className={field}
+            value={form.end_time}
+            onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+          />
+        </div>
       </div>
       <div>
         <label className={label}>Location</label>
@@ -176,10 +199,12 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
   const signups = session.signups ?? [];
 
   const dt = new Date(session.date_time);
+  const endDt = session.end_time ? new Date(session.end_time) : null;
   const [editForm, setEditForm] = useState({
     title: session.title,
     date: dt.toLocaleDateString("en-CA"),
-    time: dt.toTimeString().slice(0, 5),
+    start_time: dt.toTimeString().slice(0, 5),
+    end_time: endDt ? endDt.toTimeString().slice(0, 5) : "",
     location: session.location,
     notes: session.notes ?? "",
   });
@@ -196,13 +221,17 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
     e.preventDefault();
     setSaving(true);
     setEditError("");
-    const date_time = new Date(`${editForm.date}T${editForm.time}`).toISOString();
+    const date_time = new Date(`${editForm.date}T${editForm.start_time}`).toISOString();
+    const end_time = editForm.end_time
+      ? new Date(`${editForm.date}T${editForm.end_time}`).toISOString()
+      : null;
     const res = await fetch(`/api/sessions/${session.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: editForm.title,
         date_time,
+        end_time,
         location: editForm.location,
         notes: editForm.notes || undefined,
       }),
@@ -231,7 +260,7 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
             {past && <span className="ml-2 text-xs text-gray-500">(past)</span>}
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
-            {formatDateTime(session.date_time)} · {session.location}
+            {formatDateTime(session.date_time, session.end_time)} · {session.location}
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
             {signups.length} signed up
@@ -279,7 +308,10 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
             <form onSubmit={handleSave} className="space-y-2">
               <input className={field} value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Title" required />
               <input type="date" className={field} value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} required />
-              <input type="time" className={field} value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} required />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="time" className={field} value={editForm.start_time} onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })} placeholder="Start time" required />
+                <input type="time" className={field} value={editForm.end_time} onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })} placeholder="End time" />
+              </div>
               <input className={field} value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Location" required />
               <textarea className={`${field} resize-none`} rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Notes (optional)" />
               {editError && <p className="text-xs text-red-400">{editError}</p>}
@@ -329,12 +361,12 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
   return (
     <div className="min-h-screen bg-gray-950">
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🥊</span>
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/NUS_MMA_Logo_No BG.png" alt="NUS MMA" className="w-14 h-14 object-contain" />
             <div>
-              <h1 className="font-bold text-white text-sm">Coach Admin</h1>
-              <p className="text-xs text-gray-400">NUS MMA</p>
+              <h1 className="font-bold text-white text-lg">Coach Admin</h1>
+              <p className="text-sm text-gray-400">NUS MMA</p>
             </div>
           </div>
           <button

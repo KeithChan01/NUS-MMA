@@ -11,7 +11,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { title, date_time, location, notes } = body;
+  const { title, date_time, end_time, location, notes } = body;
 
   if (!title || !date_time || !location) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -20,7 +20,7 @@ export async function PATCH(
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
-    .update({ title, date_time, location, notes: notes || null })
+    .update({ title, date_time, end_time: end_time || null, location, notes: notes || null })
     .eq("id", id)
     .select()
     .single();
