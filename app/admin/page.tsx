@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import AdminLogin from "@/components/AdminLogin";
 import AdminDashboard from "@/components/AdminDashboard";
+import type { Session } from "@/lib/types";
 
 export const revalidate = 0;
 
@@ -13,11 +14,25 @@ export default async function AdminPage() {
     return <AdminLogin />;
   }
 
-  const supabase = await createServiceClient();
-  const { data: sessions } = await supabase
-    .from("sessions")
-    .select("*, signups(id, user_id, display_name, created_at, profile:profiles(*))")
-    .order("date_time", { ascending: true });
+  const supabase = createAdminClient();
 
-  return <AdminDashboard sessions={sessions ?? []} />;
+  const [{ data: sessions }, { data: profiles }] = await Promise.all([
+    supabase
+      .from("sessions")
+      .select("*, signups(id, user_id, display_name, created_at)")
+      .order("date_time", { ascending: true }),
+    supabase.from("profiles").select("*"),
+  ]);
+
+  // Merge profiles into signups
+  const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p]));
+  const sessionsWithProfiles: Session[] = (sessions ?? []).map((s) => ({
+    ...s,
+    signups: (s.signups ?? []).map((su: { user_id: string }) => ({
+      ...su,
+      profile: profileMap[su.user_id] ?? null,
+    })),
+  }));
+
+  return <AdminDashboard sessions={sessionsWithProfiles} />;
 }

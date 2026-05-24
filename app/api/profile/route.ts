@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
   const supabase = await createClient();
@@ -7,7 +8,7 @@ export async function GET() {
 
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const serviceClient = await createServiceClient();
+  const serviceClient = createAdminClient();
   const { data, error } = await serviceClient
     .from("profiles")
     .select("*")
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const serviceClient = await createServiceClient();
+  const serviceClient = createAdminClient();
   const { data, error } = await serviceClient
     .from("profiles")
     .upsert({

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
 
 export async function GET() {
-  const supabase = await createServiceClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
     .select("*, signups(id, user_id, display_name, created_at)")
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const supabase = await createServiceClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
     .insert({ title, date_time, location, notes: notes || null })

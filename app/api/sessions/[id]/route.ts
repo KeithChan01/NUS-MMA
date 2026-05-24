@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-guard";
 
 export async function PATCH(
@@ -17,7 +17,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const supabase = await createServiceClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("sessions")
     .update({ title, date_time, location, notes: notes || null })
@@ -37,7 +37,7 @@ export async function DELETE(
   if (unauthorized) return unauthorized;
 
   const { id } = await params;
-  const supabase = await createServiceClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("sessions").delete().eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

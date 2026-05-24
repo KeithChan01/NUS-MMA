@@ -1,4 +1,5 @@
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import SessionList from "@/components/SessionList";
 import SignInButton from "@/components/SignInButton";
 import UserMenu from "@/components/UserMenu";
@@ -11,12 +12,12 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const serviceClient = await createServiceClient();
+  const serviceClient = createAdminClient();
 
   const [{ data: sessions }, { data: profile }] = await Promise.all([
     serviceClient
       .from("sessions")
-      .select("*, signups(id, user_id, display_name, created_at, profile:profiles(*))")
+      .select("*, signups(id, user_id, display_name, created_at)")
       .gte("date_time", new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString())
       .order("date_time", { ascending: true }),
     user

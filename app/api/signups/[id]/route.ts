@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function DELETE(
   _request: NextRequest,
@@ -15,7 +16,7 @@ export async function DELETE(
   const { id } = await params;
 
   // Verify the signup belongs to this user before deleting
-  const serviceClient = await createServiceClient();
+  const serviceClient = createAdminClient();
   const { data: signup, error: fetchError } = await serviceClient
     .from("signups")
     .select("user_id")
