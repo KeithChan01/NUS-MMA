@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Session, Signup, Profile } from "@/lib/types";
 import { MARTIAL_ARTS } from "@/lib/types";
 
@@ -300,15 +299,16 @@ function SessionRow({ session, onDeleted, onUpdated }: { session: Session; onDel
   );
 }
 
+const reload = () => window.location.reload();
+
 export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
-  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     setLoggingOut(true);
     await fetch("/api/admin/logout", { method: "POST" });
-    router.refresh();
+    reload();
   };
 
   const upcoming = sessions.filter((s) => !isPast(s.date_time));
@@ -355,7 +355,7 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
               <CreateSessionForm
                 onCreated={() => {
                   setShowForm(false);
-                  router.refresh();
+                  reload();
                 }}
               />
             </div>
@@ -372,7 +372,7 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
           ) : (
             <div className="space-y-2">
               {upcoming.map((s) => (
-                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} onUpdated={() => router.refresh()} />
+                <SessionRow key={s.id} session={s} onDeleted={reload} onUpdated={reload} />
               ))}
             </div>
           )}
@@ -386,7 +386,7 @@ export default function AdminDashboard({ sessions }: { sessions: Session[] }) {
             </p>
             <div className="space-y-2">
               {past.map((s) => (
-                <SessionRow key={s.id} session={s} onDeleted={() => router.refresh()} onUpdated={() => router.refresh()} />
+                <SessionRow key={s.id} session={s} onDeleted={reload} onUpdated={reload} />
               ))}
             </div>
           </div>

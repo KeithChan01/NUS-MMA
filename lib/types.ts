@@ -25,6 +25,7 @@ export type Profile = {
   bjj: string | null;
   wrestling: string | null;
   boxing: string | null;
+  kickboxing: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -43,9 +44,10 @@ export const WEIGHT_CLASSES = [
 
 export const EXPERIENCE_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
-export const MARTIAL_ARTS: { key: keyof Pick<Profile, "muay_thai" | "bjj" | "wrestling" | "boxing">; label: string }[] = [
+export const MARTIAL_ARTS: { key: keyof Pick<Profile, "muay_thai" | "bjj" | "wrestling" | "boxing" | "kickboxing">; label: string }[] = [
   { key: "muay_thai", label: "Muay Thai" },
+  { key: "kickboxing", label: "Kickboxing" },
+  { key: "boxing", label: "Boxing" },
   { key: "bjj", label: "BJJ" },
   { key: "wrestling", label: "Wrestling" },
-  { key: "boxing", label: "Boxing" },
 ];

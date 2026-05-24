@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   const body = await request.json();
-  const { display_name, weight_class, muay_thai, bjj, wrestling, boxing } = body;
+  const { display_name, weight_class, muay_thai, bjj, wrestling, boxing, kickboxing } = body;
 
   if (!display_name?.trim()) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       display_name: display_name.trim(),
       weight_class: weight_class || null,
       muay_thai: muay_thai || null,
+      kickboxing: kickboxing || null,
       bjj: bjj || null,
       wrestling: wrestling || null,
       boxing: boxing || null,

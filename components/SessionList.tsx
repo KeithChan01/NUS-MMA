@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Session, Signup } from "@/lib/types";
 import ProfileSetup from "@/components/ProfileSetup";
 
@@ -45,7 +44,6 @@ function SessionCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const signups = session.signups ?? [];
   const mySignup = signups.find((s) => s.user_id === currentUserId);
@@ -60,7 +58,7 @@ function SessionCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: session.id }),
       });
-      if (res.ok) router.refresh();
+      if (res.ok) window.location.reload();
     } finally {
       setLoading(false);
     }
@@ -71,7 +69,7 @@ function SessionCard({
     setLoading(true);
     try {
       const res = await fetch(`/api/signups/${mySignup.id}`, { method: "DELETE" });
-      if (res.ok) router.refresh();
+      if (res.ok) window.location.reload();
     } finally {
       setLoading(false);
     }

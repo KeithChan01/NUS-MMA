@@ -22,7 +22,7 @@ export default function UserMenu({ user, profile }: { user: User; profile: Profi
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.refresh();
+    window.location.reload();
   };
 
   return (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { WEIGHT_CLASSES, EXPERIENCE_LEVELS, MARTIAL_ARTS, type Profile } from "@/lib/types";
 
 type Props = {
@@ -10,11 +9,11 @@ type Props = {
 };
 
 export default function ProfileSetup({ existing, onClose }: Props) {
-  const router = useRouter();
   const [form, setForm] = useState({
     display_name: existing?.display_name ?? "",
     weight_class: existing?.weight_class ?? "",
     muay_thai: existing?.muay_thai ?? "",
+    kickboxing: existing?.kickboxing ?? "",
     bjj: existing?.bjj ?? "",
     wrestling: existing?.wrestling ?? "",
     boxing: existing?.boxing ?? "",
@@ -35,7 +34,7 @@ export default function ProfileSetup({ existing, onClose }: Props) {
 
     setLoading(false);
     if (res.ok) {
-      router.refresh();
+      window.location.reload();
       onClose?.();
     } else {
       const data = await res.json();
